@@ -96,14 +96,15 @@ const CheckoutForm = ({ onBack, onComplete, amount }: { onBack: () => void, onCo
 const PaymentStep: React.FC<PaymentStepProps> = ({ data, onBack, onComplete }) => {
     const [clientSecret, setClientSecret] = useState('');
     const [isLoadingSecret, setIsLoadingSecret] = useState(true);
-    const SESSION_PRICE = 100; // R$ 1,00 in cents
+    const SESSION_PRICE = 100; // R$ 1,00 (Promotional)
+    const DISPLAY_PRICE = "R$ 1,00";
 
     useEffect(() => {
         // Create PaymentIntent as soon as the component loads
-        fetch('/api/create-payment-intent', {
+        fetch('/api/payments?action=intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: SESSION_PRICE })
+            body: JSON.stringify({ amount: SESSION_PRICE, currency: 'brl' })
         })
             .then((res) => res.json())
             .then((data) => {
@@ -123,8 +124,14 @@ const PaymentStep: React.FC<PaymentStepProps> = ({ data, onBack, onComplete }) =
 
             <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 mb-6">
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Sessão de Terapia</span>
-                    <span className="font-bold text-slate-800 dark:text-white">R$ 1,00</span>
+                    <div>
+                        <span className="block text-slate-600 dark:text-slate-400">Sessão de Terapia</span>
+                        <span className="text-xs text-green-600 font-bold uppercase bg-green-100 px-2 py-0.5 rounded">Oferta de Lançamento</span>
+                    </div>
+                    <div className="text-right">
+                        <span className="block text-xs text-slate-400 line-through">R$ 150,00</span>
+                        <span className="font-bold text-slate-800 dark:text-white text-xl">{DISPLAY_PRICE}</span>
+                    </div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-500">Data</span>
@@ -141,7 +148,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({ data, onBack, onComplete }) =
                 </div>
             ) : clientSecret ? (
                 <Elements stripe={stripePromise} options={{ clientSecret, locale: 'pt-BR' }}>
-                    <CheckoutForm onBack={onBack} onComplete={onComplete} amount="R$ 1,00" />
+                    <CheckoutForm onBack={onBack} onComplete={onComplete} amount={DISPLAY_PRICE} />
                 </Elements>
             ) : (
                 <div className="text-center text-red-500 p-4 border border-red-200 rounded-xl bg-red-50">
